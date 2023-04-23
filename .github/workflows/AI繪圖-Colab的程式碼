@@ -1,0 +1,394 @@
+%cd /content
+
+%env TF_CPP_MIN_LOG_LEVEL=1
+
+!apt -y update -qq
+!wget http://launchpadlibrarian.net/367274644/libgoogle-perftools-dev_2.5-2.2ubuntu3_amd64.deb
+!wget https://launchpad.net/ubuntu/+source/google-perftools/2.5-2.2ubuntu3/+build/14795286/+files/google-perftools_2.5-2.2ubuntu3_all.deb
+!wget https://launchpad.net/ubuntu/+source/google-perftools/2.5-2.2ubuntu3/+build/14795286/+files/libtcmalloc-minimal4_2.5-2.2ubuntu3_amd64.deb
+!wget https://launchpad.net/ubuntu/+source/google-perftools/2.5-2.2ubuntu3/+build/14795286/+files/libgoogle-perftools4_2.5-2.2ubuntu3_amd64.deb
+!apt install -qq libunwind8-dev
+!dpkg -i *.deb
+%env LD_PRELOAD=libtcmalloc.so
+!rm *.deb
+
+!apt -y install -qq aria2
+!pip install -q torch==2.0.0+cu118 torchvision==0.15.1+cu118 torchaudio==2.0.1+cu118 torchtext==0.15.1 torchdata==0.6.0 --extra-index-url https://download.pytorch.org/whl/cu118 -U
+!pip install -q xformers==0.0.18 triton==2.0.0 -U
+
+!git clone -b v2.2 https://github.com/camenduru/stable-diffusion-webui
+!git clone https://huggingface.co/embed/negative /content/stable-diffusion-webui/embeddings/negative
+!git clone https://huggingface.co/embed/lora /content/stable-diffusion-webui/models/Lora/positive
+!aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/embed/upscale/resolve/main/4x-UltraSharp.pth -d /content/stable-diffusion-webui/models/ESRGAN -o 4x-UltraSharp.pth
+!wget https://raw.githubusercontent.com/camenduru/stable-diffusion-webui-scripts/main/run_n_times.py -O /content/stable-diffusion-webui/scripts/run_n_times.py
+!git clone https://github.com/deforum-art/deforum-for-automatic1111-webui /content/stable-diffusion-webui/extensions/deforum-for-automatic1111-webui
+!git clone https://github.com/AlUlkesh/stable-diffusion-webui-images-browser /content/stable-diffusion-webui/extensions/stable-diffusion-webui-images-browser
+!git clone https://github.com/camenduru/stable-diffusion-webui-huggingface /content/stable-diffusion-webui/extensions/stable-diffusion-webui-huggingface
+!git clone https://github.com/camenduru/sd-civitai-browser /content/stable-diffusion-webui/extensions/sd-civitai-browser
+!git clone https://github.com/kohya-ss/sd-webui-additional-networks /content/stable-diffusion-webui/extensions/sd-webui-additional-networks
+!git clone https://github.com/camenduru/sd-webui-tunnels /content/stable-diffusion-webui/extensions/sd-webui-tunnels
+!git clone https://github.com/etherealxx/batchlinks-webui /content/stable-diffusion-webui/extensions/batchlinks-webui
+!git clone https://github.com/catppuccin/stable-diffusion-webui /content/stable-diffusion-webui/extensions/stable-diffusion-webui-catppuccin
+!git clone https://github.com/KohakuBlueleaf/a1111-sd-webui-locon /content/stable-diffusion-webui/extensions/a1111-sd-webui-locon
+!git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui-rembg /content/stable-diffusion-webui/extensions/stable-diffusion-webui-rembg
+!git clone https://github.com/ashen-sensored/stable-diffusion-webui-two-shot /content/stable-diffusion-webui/extensions/stable-diffusion-webui-two-shot
+!git clone https://github.com/camenduru/sd_webui_stealth_pnginfo /content/stable-diffusion-webui/extensions/sd_webui_stealth_pnginfo
+%cd /content/stable-diffusion-webui
+!git reset --hard
+!git -C /content/stable-diffusion-webui/repositories/stable-diffusion-stability-ai reset --hard
+
+!aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ckpt/cool-japan-diffusion-2-1-0/resolve/main/v2-1-0.ckpt -d /content/stable-diffusion-webui/models/Stable-diffusion -o v2-1-0.ckpt
+!aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ckpt/cool-japan-diffusion-2-1-0/raw/main/v2-1-0.yaml -d /content/stable-diffusion-webui/models/Stable-diffusion -o v2-1-0.yaml
+
+!sed -i -e '''/ prepare_environment()/a\ os.system(f"""sed -i -e ''"s/dict()))/dict())).cuda()/g"'' /content/stable-diffusion-webui/repositories/stable-diffusion-stability-ai/ldm/util.py""")''' /content/stable-diffusion-webui/launch.py
+!sed -i -e 's/"sd_model_checkpoint",/"sd_model_checkpoint,sd_vae,CLIP_stop_at_last_layers",/g' /content/stable-diffusion-webui/modules/shared.py
+
+!python launch.py --listen --xformers --enable-insecure-extension-access --theme dark --gradio-queue --multiple
+
+程式生成結果
+/content
+env: TF_CPP_MIN_LOG_LEVEL=1
+30 packages can be upgraded. Run 'apt list --upgradable' to see them.
+--2023-04-23 13:44:00-- http://launchpadlibrarian.net/367274644/libgoogle-perftools-dev_2.5-2.2ubuntu3_amd64.deb
+Resolving launchpadlibrarian.net (launchpadlibrarian.net)... 185.125.189.229, 185.125.189.228, 2620:2d:4000:1001::8008, ...
+Connecting to launchpadlibrarian.net (launchpadlibrarian.net)|185.125.189.229|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 203696 (199K) [application/x-debian-package]
+Saving to: ‘libgoogle-perftools-dev_2.5-2.2ubuntu3_amd64.deb’
+
+libgoogle-perftools 100%[===================>] 198.92K 504KB/s in 0.4s
+
+2023-04-23 13:44:01 (504 KB/s) - ‘libgoogle-perftools-dev_2.5-2.2ubuntu3_amd64.deb’ saved [203696/203696]
+
+--2023-04-23 13:44:01-- https://launchpad.net/ubuntu/+source/google-perftools/2.5-2.2ubuntu3/+build/14795286/+files/google-perftools_2.5-2.2ubuntu3_all.deb
+Resolving launchpad.net (launchpad.net)... 185.125.189.223, 185.125.189.222, 2620:2d:4000:1001::8004, ...
+Connecting to launchpad.net (launchpad.net)|185.125.189.223|:443... connected.
+HTTP request sent, awaiting response... 303 See Other
+Location: https://launchpadlibrarian.net/367274642/google-perftools_2.5-2.2ubuntu3_all.deb [following]
+--2023-04-23 13:44:01-- https://launchpadlibrarian.net/367274642/google-perftools_2.5-2.2ubuntu3_all.deb
+Resolving launchpadlibrarian.net (launchpadlibrarian.net)... 185.125.189.229, 185.125.189.228, 2620:2d:4000:1001::8007, ...
+Connecting to launchpadlibrarian.net (launchpadlibrarian.net)|185.125.189.229|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 294224 (287K) [application/x-debian-package]
+Saving to: ‘google-perftools_2.5-2.2ubuntu3_all.deb’
+
+google-perftools_2. 100%[===================>] 287.33K 595KB/s in 0.5s
+
+2023-04-23 13:44:02 (595 KB/s) - ‘google-perftools_2.5-2.2ubuntu3_all.deb’ saved [294224/294224]
+
+--2023-04-23 13:44:02-- https://launchpad.net/ubuntu/+source/google-perftools/2.5-2.2ubuntu3/+build/14795286/+files/libtcmalloc-minimal4_2.5-2.2ubuntu3_amd64.deb
+Resolving launchpad.net (launchpad.net)... 185.125.189.223, 185.125.189.222, 2620:2d:4000:1001::8004, ...
+Connecting to launchpad.net (launchpad.net)|185.125.189.223|:443... connected.
+HTTP request sent, awaiting response... 303 See Other
+Location: https://launchpadlibrarian.net/367274648/libtcmalloc-minimal4_2.5-2.2ubuntu3_amd64.deb [following]
+--2023-04-23 13:44:03-- https://launchpadlibrarian.net/367274648/libtcmalloc-minimal4_2.5-2.2ubuntu3_amd64.deb
+Resolving launchpadlibrarian.net (launchpadlibrarian.net)... 185.125.189.229, 185.125.189.228, 2620:2d:4000:1001::8008, ...
+Connecting to launchpadlibrarian.net (launchpadlibrarian.net)|185.125.189.229|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 91644 (89K) [application/x-debian-package]
+Saving to: ‘libtcmalloc-minimal4_2.5-2.2ubuntu3_amd64.deb’
+
+libtcmalloc-minimal 100%[===================>] 89.50K 378KB/s in 0.2s
+
+2023-04-23 13:44:04 (378 KB/s) - ‘libtcmalloc-minimal4_2.5-2.2ubuntu3_amd64.deb’ saved [91644/91644]
+
+--2023-04-23 13:44:04-- https://launchpad.net/ubuntu/+source/google-perftools/2.5-2.2ubuntu3/+build/14795286/+files/libgoogle-perftools4_2.5-2.2ubuntu3_amd64.deb
+Resolving launchpad.net (launchpad.net)... 185.125.189.223, 185.125.189.222, 2620:2d:4000:1001::8003, ...
+Connecting to launchpad.net (launchpad.net)|185.125.189.223|:443... connected.
+HTTP request sent, awaiting response... 303 See Other
+Location: https://launchpadlibrarian.net/367274647/libgoogle-perftools4_2.5-2.2ubuntu3_amd64.deb [following]
+--2023-04-23 13:44:04-- https://launchpadlibrarian.net/367274647/libgoogle-perftools4_2.5-2.2ubuntu3_amd64.deb
+Resolving launchpadlibrarian.net (launchpadlibrarian.net)... 185.125.189.229, 185.125.189.228, 2620:2d:4000:1001::8008, ...
+Connecting to launchpadlibrarian.net (launchpadlibrarian.net)|185.125.189.229|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 189628 (185K) [application/x-debian-package]
+Saving to: ‘libgoogle-perftools4_2.5-2.2ubuntu3_amd64.deb’
+
+libgoogle-perftools 100%[===================>] 185.18K 492KB/s in 0.4s
+
+2023-04-23 13:44:05 (492 KB/s) - ‘libgoogle-perftools4_2.5-2.2ubuntu3_amd64.deb’ saved [189628/189628]
+
+The following NEW packages will be installed:
+libunwind-dev
+0 upgraded, 1 newly installed, 0 to remove and 30 not upgraded.
+Need to get 472 kB of archives.
+After this operation, 4,164 kB of additional disk space will be used.
+Selecting previously unselected package libunwind-dev:amd64.
+(Reading database ... 122352 files and directories currently installed.)
+Preparing to unpack .../libunwind-dev_1.2.1-9ubuntu0.1_amd64.deb ...
+Unpacking libunwind-dev:amd64 (1.2.1-9ubuntu0.1) ...
+Setting up libunwind-dev:amd64 (1.2.1-9ubuntu0.1) ...
+Processing triggers for man-db (2.9.1-1) ...
+dpkg: warning: downgrading google-perftools from 2.7-1ubuntu2 to 2.5-2.2ubuntu3
+(Reading database ... 122405 files and directories currently installed.)
+Preparing to unpack google-perftools_2.5-2.2ubuntu3_all.deb ...
+Unpacking google-perftools (2.5-2.2ubuntu3) over (2.7-1ubuntu2) ...
+dpkg: warning: downgrading libgoogle-perftools4:amd64 from 2.7-1ubuntu2 to 2.5-2.2ubuntu3
+Preparing to unpack libgoogle-perftools4_2.5-2.2ubuntu3_amd64.deb ...
+Unpacking libgoogle-perftools4 (2.5-2.2ubuntu3) over (2.7-1ubuntu2) ...
+Selecting previously unselected package libgoogle-perftools-dev.
+Preparing to unpack libgoogle-perftools-dev_2.5-2.2ubuntu3_amd64.deb ...
+Unpacking libgoogle-perftools-dev (2.5-2.2ubuntu3) ...
+dpkg: warning: downgrading libtcmalloc-minimal4:amd64 from 2.7-1ubuntu2 to 2.5-2.2ubuntu3
+Preparing to unpack libtcmalloc-minimal4_2.5-2.2ubuntu3_amd64.deb ...
+Unpacking libtcmalloc-minimal4 (2.5-2.2ubuntu3) over (2.7-1ubuntu2) ...
+Setting up libtcmalloc-minimal4 (2.5-2.2ubuntu3) ...
+Setting up libgoogle-perftools4 (2.5-2.2ubuntu3) ...
+Setting up libgoogle-perftools-dev (2.5-2.2ubuntu3) ...
+Setting up google-perftools (2.5-2.2ubuntu3) ...
+Processing triggers for man-db (2.9.1-1) ...
+Processing triggers for libc-bin (2.31-0ubuntu9.9) ...
+env: LD_PRELOAD=libtcmalloc.so
+The following additional packages will be installed:
+libaria2-0 libc-ares2
+The following NEW packages will be installed:
+aria2 libaria2-0 libc-ares2
+0 upgraded, 3 newly installed, 0 to remove and 34 not upgraded.
+Need to get 1,475 kB of archives.
+After this operation, 5,959 kB of additional disk space will be used.
+Selecting previously unselected package libc-ares2:amd64.
+(Reading database ... 122496 files and directories currently installed.)
+Preparing to unpack .../libc-ares2_1.15.0-1ubuntu0.2_amd64.deb ...
+Unpacking libc-ares2:amd64 (1.15.0-1ubuntu0.2) ...
+Selecting previously unselected package libaria2-0:amd64.
+Preparing to unpack .../libaria2-0_1.35.0-1build1_amd64.deb ...
+Unpacking libaria2-0:amd64 (1.35.0-1build1) ...
+Selecting previously unselected package aria2.
+Preparing to unpack .../aria2_1.35.0-1build1_amd64.deb ...
+Unpacking aria2 (1.35.0-1build1) ...
+Setting up libc-ares2:amd64 (1.15.0-1ubuntu0.2) ...
+Setting up libaria2-0:amd64 (1.35.0-1build1) ...
+Setting up aria2 (1.35.0-1build1) ...
+Processing triggers for man-db (2.9.1-1) ...
+Processing triggers for libc-bin (2.31-0ubuntu9.9) ...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 27.5 MB/s eta 0:00:00
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 123.8/123.8 MB 8.5 MB/s eta 0:00:00
+Cloning into 'stable-diffusion-webui'...
+remote: Enumerating objects: 17762, done.
+remote: Total 17762 (delta 0), reused 0 (delta 0), pack-reused 17762
+Receiving objects: 100% (17762/17762), 28.30 MiB | 34.50 MiB/s, done.
+Resolving deltas: 100% (12414/12414), done.
+Cloning into '/content/stable-diffusion-webui/embeddings/negative'...
+remote: Enumerating objects: 12, done.
+remote: Total 12 (delta 0), reused 0 (delta 0), pack-reused 12
+Unpacking objects: 100% (12/12), 1.70 KiB | 1.70 MiB/s, done.
+Cloning into '/content/stable-diffusion-webui/models/Lora/positive'...
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 9 (delta 0), reused 0 (delta 0), pack-reused 6
+Unpacking objects: 100% (9/9), 1.28 KiB | 1.28 MiB/s, done.
+
+Download Results:
+gid |stat|avg speed |path/URI
+======+====+===========+=======================================================
+68b0b2|OK | 123MiB/s|/content/stable-diffusion-webui/models/ESRGAN/4x-UltraSharp.pth
+
+Status Legend:
+(OK):download completed.
+--2023-04-23 13:44:40-- https://raw.githubusercontent.com/camenduru/stable-diffusion-webui-scripts/main/run_n_times.py
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.110.133, 185.199.111.133, 185.199.108.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.110.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 533 [text/plain]
+Saving to: ‘/content/stable-diffusion-webui/scripts/run_n_times.py’
+
+/content/stable-dif 100%[===================>] 533 --.-KB/s in 0s
+
+2023-04-23 13:44:40 (36.8 MB/s) - ‘/content/stable-diffusion-webui/scripts/run_n_times.py’ saved [533/533]
+
+Cloning into '/content/stable-diffusion-webui/extensions/deforum-for-automatic1111-webui'...
+remote: Enumerating objects: 12729, done.
+remote: Counting objects: 100% (252/252), done.
+remote: Compressing objects: 100% (123/123), done.
+remote: Total 12729 (delta 133), reused 221 (delta 122), pack-reused 12477
+Receiving objects: 100% (12729/12729), 128.06 MiB | 39.94 MiB/s, done.
+Resolving deltas: 100% (7476/7476), done.
+Cloning into '/content/stable-diffusion-webui/extensions/stable-diffusion-webui-images-browser'...
+remote: Enumerating objects: 851, done.
+remote: Counting objects: 100% (448/448), done.
+remote: Compressing objects: 100% (181/181), done.
+remote: Total 851 (delta 259), reused 394 (delta 236), pack-reused 403
+Receiving objects: 100% (851/851), 214.42 KiB | 2.98 MiB/s, done.
+Resolving deltas: 100% (389/389), done.
+Cloning into '/content/stable-diffusion-webui/extensions/stable-diffusion-webui-huggingface'...
+remote: Enumerating objects: 121, done.
+remote: Counting objects: 100% (15/15), done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 121 (delta 12), reused 10 (delta 10), pack-reused 106
+Receiving objects: 100% (121/121), 28.80 KiB | 7.20 MiB/s, done.
+Resolving deltas: 100% (42/42), done.
+Cloning into '/content/stable-diffusion-webui/extensions/sd-civitai-browser'...
+remote: Enumerating objects: 163, done.
+remote: Counting objects: 100% (55/55), done.
+remote: Compressing objects: 100% (29/29), done.
+remote: Total 163 (delta 37), reused 28 (delta 23), pack-reused 108
+Receiving objects: 100% (163/163), 39.30 KiB | 1.79 MiB/s, done.
+Resolving deltas: 100% (37/37), done.
+Cloning into '/content/stable-diffusion-webui/extensions/sd-webui-additional-networks'...
+remote: Enumerating objects: 743, done.
+remote: Counting objects: 100% (273/273), done.
+remote: Compressing objects: 100% (105/105), done.
+remote: Total 743 (delta 201), reused 171 (delta 168), pack-reused 470
+Receiving objects: 100% (743/743), 241.47 KiB | 3.96 MiB/s, done.
+Resolving deltas: 100% (410/410), done.
+Cloning into '/content/stable-diffusion-webui/extensions/sd-webui-tunnels'...
+remote: Enumerating objects: 367, done.
+remote: Counting objects: 100% (220/220), done.
+remote: Compressing objects: 100% (79/79), done.
+remote: Total 367 (delta 164), reused 194 (delta 141), pack-reused 147
+Receiving objects: 100% (367/367), 66.67 KiB | 3.03 MiB/s, done.
+Resolving deltas: 100% (181/181), done.
+Cloning into '/content/stable-diffusion-webui/extensions/batchlinks-webui'...
+remote: Enumerating objects: 483, done.
+remote: Counting objects: 100% (212/212), done.
+remote: Compressing objects: 100% (117/117), done.
+remote: Total 483 (delta 141), reused 149 (delta 93), pack-reused 271
+Receiving objects: 100% (483/483), 4.34 MiB | 19.65 MiB/s, done.
+Resolving deltas: 100% (259/259), done.
+Cloning into '/content/stable-diffusion-webui/extensions/stable-diffusion-webui-catppuccin'...
+remote: Enumerating objects: 314, done.
+remote: Counting objects: 100% (149/149), done.
+remote: Compressing objects: 100% (80/80), done.
+remote: Total 314 (delta 99), reused 96 (delta 64), pack-reused 165
+Receiving objects: 100% (314/314), 13.46 MiB | 28.08 MiB/s, done.
+Resolving deltas: 100% (166/166), done.
+Cloning into '/content/stable-diffusion-webui/extensions/a1111-sd-webui-locon'...
+remote: Enumerating objects: 178, done.
+remote: Counting objects: 100% (28/28), done.
+remote: Compressing objects: 100% (20/20), done.
+remote: Total 178 (delta 11), reused 8 (delta 3), pack-reused 150
+Receiving objects: 100% (178/178), 43.42 KiB | 2.07 MiB/s, done.
+Resolving deltas: 100% (89/89), done.
+Cloning into '/content/stable-diffusion-webui/extensions/stable-diffusion-webui-rembg'...
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (8/8), done.
+remote: Total 9 (delta 0), reused 9 (delta 0), pack-reused 0
+Unpacking objects: 100% (9/9), 1019.03 KiB | 5.42 MiB/s, done.
+Cloning into '/content/stable-diffusion-webui/extensions/stable-diffusion-webui-two-shot'...
+remote: Enumerating objects: 176, done.
+remote: Counting objects: 100% (62/62), done.
+remote: Compressing objects: 100% (38/38), done.
+remote: Total 176 (delta 31), reused 42 (delta 24), pack-reused 114
+Receiving objects: 100% (176/176), 22.22 MiB | 42.93 MiB/s, done.
+Resolving deltas: 100% (77/77), done.
+Cloning into '/content/stable-diffusion-webui/extensions/sd_webui_stealth_pnginfo'...
+remote: Enumerating objects: 38, done.
+remote: Counting objects: 100% (38/38), done.
+remote: Compressing objects: 100% (21/21), done.
+remote: Total 38 (delta 14), reused 30 (delta 8), pack-reused 0
+Unpacking objects: 100% (38/38), 8.07 KiB | 1.15 MiB/s, done.
+/content/stable-diffusion-webui
+HEAD is now at 22bcc7be attempted fix for infinite loading for settings that some people experience
+fatal: cannot change to '/content/stable-diffusion-webui/repositories/stable-diffusion-stability-ai': No such file or directory
+
+Download Results:
+gid |stat|avg speed |path/URI
+======+====+===========+=======================================================
+d6f18b|OK | 242MiB/s|/content/stable-diffusion-webui/models/Stable-diffusion/v2-1-0.ckpt
+
+Status Legend:
+(OK):download completed.
+
+Download Results:
+gid |stat|avg speed |path/URI
+======+====+===========+=======================================================
+b431f3|OK | 174KiB/s|/content/stable-diffusion-webui/models/Stable-diffusion/v2-1-0.yaml
+
+Status Legend:
+(OK):download completed.
+Python 3.9.16 (main, Dec 7 2022, 01:11:51)
+[GCC 9.4.0]
+Commit hash: 22bcc7be428c94e9408f589966c2040187245d81
+Installing gfpgan
+Installing clip
+Installing open_clip
+Cloning Stable Diffusion into /content/stable-diffusion-webui/repositories/stable-diffusion-stability-ai...
+Cloning Taming Transformers into /content/stable-diffusion-webui/repositories/taming-transformers...
+Cloning K-diffusion into /content/stable-diffusion-webui/repositories/k-diffusion...
+Cloning CodeFormer into /content/stable-diffusion-webui/repositories/CodeFormer...
+Cloning BLIP into /content/stable-diffusion-webui/repositories/BLIP...
+Installing requirements for CodeFormer
+Installing requirements for Web UI
+
+Installing rembg
+Installing onnxruntime for REMBG extension
+Installing pymatting for REMBG extension
+
+Installing pycloudflared
+
+Installing Deforum requirement: av
+Installing Deforum requirement: pims
+
+Installing requirements for CivitAI Browser
+
+Launching Web UI with arguments: --listen --xformers --enable-insecure-extension-access --theme dark --gradio-queue --multiple
+2023-04-23 13:47:32.511367: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/usr/local/lib/python3.9/dist-packages/torchvision/transforms/functional_tensor.py:5: UserWarning: The torchvision.transforms.functional_tensor module is deprecated in 0.15 and will be removed in 0.17. Please don't rely on it. You probably just need to use APIs in torchvision.transforms.functional or in torchvision.transforms.v2.functional.
+warnings.warn(
+Additional Network extension not installed, Only hijack built-in lora
+LoCon Extension hijack built-in lora successfully
+[AddNet] Updating model hashes...
+0it [00:00, ?it/s]
+[AddNet] Updating model hashes...
+0it [00:00, ?it/s]
+all detected, remote.moe trying to connect...
+Warning: Permanently added 'localhost.run,54.161.197.247' (RSA) to the list of known hosts.
+Warning: Permanently added 'remote.moe,159.69.126.209' (ECDSA) to the list of known hosts.
+all detected, cloudflared trying to connect...
+Download cloudflared...: 100% 34.5M/34.5M [00:00<00:00, 206MB/s]
+Calculating sha256 for /content/stable-diffusion-webui/models/Stable-diffusion/v2-1-0.ckpt: 839b169c31a730e39f445c92da722f68b4b16987c81ca1624ef114c120712282
+Loading weights [839b169c31] from /content/stable-diffusion-webui/models/Stable-diffusion/v2-1-0.ckpt
+Creating model from config: /content/stable-diffusion-webui/models/Stable-diffusion/v2-1-0.yaml
+LatentDiffusion: Running in eps-prediction mode
+DiffusionWrapper has 865.91 M params.
+Applying xformers cross attention optimization.
+Textual inversion embeddings loaded(0):
+Textual inversion embeddings skipped(7): bad-hands-5, bad-artist-anime, EasyNegative, bad_prompt_version2, ng_deepnegative_v1_75t, bad-artist, bad-image-v2-39000
+Model loaded in 49.8s (calculate hash: 30.3s, load weights from disk: 14.9s, create model: 3.0s, apply weights to model: 1.2s, load textual inversion embeddings: 0.2s).
+Image Browser: Creating database
+Image Browser: Database created
+Public WebUI Colab URL: http://iwdbw3lgpuzvgseqw2jajoabdcy6wptoueenov6m7ow3t6vrq24q.remote.moe/
+Public WebUI Colab URL: https://49a79682-1e8c-4604.gradio.live/
+Public WebUI Colab URL: https://5a5e64e8ada176.lhr.life/
+Public WebUI Colab URL: https://bolivia-harmony-alto-days.trycloudflare.com/
+Startup time: 113.2s (import torch: 6.2s, import gradio: 1.4s, import ldm: 2.2s, other imports: 2.2s, setup codeformer: 0.3s, load scripts: 35.0s, load SD checkpoint: 54.3s, create ui: 11.5s, gradio launch: 0.2s).
+0% 0/20 [00:00<?, ?it/s]
+5% 1/20 [00:04<01:24, 4.47s/it]
+15% 3/20 [00:04<00:18, 1.10s/it]
+25% 5/20 [00:04<00:07, 1.97it/s]
+30% 6/20 [00:05<00:05, 2.63it/s]
+35% 7/20 [00:05<00:03, 3.35it/s]
+40% 8/20 [00:05<00:02, 4.04it/s]
+45% 9/20 [00:05<00:02, 4.74it/s]
+50% 10/20 [00:05<00:01, 5.36it/s]
+55% 11/20 [00:05<00:01, 5.89it/s]
+60% 12/20 [00:05<00:01, 6.32it/s]
+65% 13/20 [00:06<00:01, 6.65it/s]
+70% 14/20 [00:06<00:00, 6.91it/s]
+75% 15/20 [00:06<00:00, 7.09it/s]
+80% 16/20 [00:06<00:00, 7.22it/s]
+85% 17/20 [00:06<00:00, 7.30it/s]
+90% 18/20 [00:06<00:00, 7.39it/s]
+95% 19/20 [00:06<00:00, 7.40it/s]
+100% 20/20 [00:06<00:00, 2.86it/s]
+Downloading: "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth" to /content/stable-diffusion-webui/models/Codeformer/codeformer-v0.1.0.pth
+
+100% 359M/359M [00:01<00:00, 224MB/s]
+Downloading: "https://github.com/xinntao/facexlib/releases/download/v0.1.0/detection_Resnet50_Final.pth" to /content/stable-diffusion-webui/repositories/CodeFormer/weights/facelib/detection_Resnet50_Final.pth
+
+100% 104M/104M [00:02<00:00, 41.1MB/s]
+Downloading: "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/parsing_parsenet.pth" to /content/stable-diffusion-webui/repositories/CodeFormer/weights/facelib/parsing_parsenet.pth
+
+100% 81.4M/81.4M [00:02<00:00, 40.0MB/s]
+
+Total progress: 100% 100/100 [01:22<00:00, 1.22it/s]
+Error: no "view" mailcap rules found for type "inode/directory"
+/usr/bin/xdg-open: 869: www-browser: not found
+/usr/bin/xdg-open: 869: links2: not found
+/usr/bin/xdg-open: 869: elinks: not found
+/usr/bin/xdg-open: 869: links: not found
+/usr/bin/xdg-open: 869: lynx: not found
+/usr/bin/xdg-open: 869: w3m: not found
+xdg-open: no method available for opening 'outputs/txt2img-images'
